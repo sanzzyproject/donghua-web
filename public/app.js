@@ -1,98 +1,44 @@
-const API_URL = '/api'; // Relative path untuk Vercel
+const API_URL = '/api';
 
-// Elemen DOM
-const homeView = document.getElementById('homeView');
-const playerView = document.getElementById('playerView');
-const trendingGrid = document.getElementById('trendingGrid');
-
-// 1. Load Data Awal
 window.addEventListener('DOMContentLoaded', async () => {
+    const trendingGrid = document.getElementById('trendingGrid');
+    
     try {
-        const res = await fetch(`${API_URL}/home`);
+        // Tambahkan timeout di fetch frontend juga
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 detik max
+
+        const res = await fetch(`${API_URL}/home`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error(`Server Error: ${res.status}`);
+        
         const data = await res.json();
+        
+        // Cek jika data kosong atau ada error dari backend
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        if (!data.anime || data.anime.length === 0) {
+            trendingGrid.innerHTML = '<p style="text-align:center; padding:20px;">Data kosong. Mungkin IP Server Vercel diblokir oleh Kuramanime.</p>';
+            return;
+        }
+
         renderGrid(data.anime);
+
     } catch (err) {
-        trendingGrid.innerHTML = '<p style="color:red">Gagal memuat data. Coba refresh.</p>';
+        console.error(err);
+        trendingGrid.innerHTML = `
+            <div style="text-align:center; color:#ff6b6b; padding:20px;">
+                <h3>Gagal Memuat</h3>
+                <p>${err.message}</p>
+                <small>Jika errornya "403" atau "Network Error", berarti Vercel diblokir oleh target.</small>
+                <br><br>
+                <button onclick="location.reload()" style="padding:10px 20px; background:#3b82f6; border:none; color:white; border-radius:5px;">Coba Lagi</button>
+            </div>
+        `;
     }
 });
 
-// 2. Render Grid Anime
-function renderGrid(animeList) {
-    trendingGrid.innerHTML = '';
-    animeList.forEach(anime => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.onclick = () => loadDetail(anime.id);
-        div.innerHTML = `
-            <img src="${anime.image}" loading="lazy" alt="${anime.title}">
-            <div class="card-content">
-                <div class="card-title">${anime.title}</div>
-            </div>
-        `;
-        trendingGrid.appendChild(div);
-    });
-}
-
-// 3. Search Function
-async function doSearch() {
-    const query = document.getElementById('searchInput').value;
-    if(!query) return;
-    
-    trendingGrid.innerHTML = '<div class="loading">Mencari...</div>';
-    const res = await fetch(`${API_URL}/search?q=${query}`);
-    const data = await res.json();
-    renderGrid(data.anime);
-    goHome(); // Pastikan ada di view home
-}
-
-// 4. Load Detail & Episodes
-async function loadDetail(id) {
-    // Switch View
-    homeView.classList.add('hidden');
-    playerView.classList.remove('hidden');
-    window.scrollTo(0,0);
-
-    const infoDiv = document.getElementById('animeInfo');
-    const epDiv = document.getElementById('episodeList');
-    
-    infoDiv.innerHTML = '<div class="loading">Memuat detail...</div>';
-    epDiv.innerHTML = '';
-
-    const res = await fetch(`${API_URL}/detail/${id}`);
-    const data = await res.json();
-
-    if(!data) {
-        infoDiv.innerHTML = 'Error memuat detail.';
-        return;
-    }
-
-    infoDiv.innerHTML = `
-        <h1>${data.title}</h1>
-        <p>${data.synopsis}</p>
-    `;
-
-    data.episodes.forEach(ep => {
-        const btn = document.createElement('a');
-        btn.className = 'ep-btn';
-        btn.innerText = ep.number;
-        // Karena tidak ada link video asli, kita buat dummy alert
-        btn.href = "#"; 
-        btn.onclick = (e) => {
-            e.preventDefault();
-            playVideo(ep.url); 
-        };
-        epDiv.appendChild(btn);
-    });
-}
-
-function playVideo(url) {
-    // DISINI LOGIKA PEMUTARAN VIDEO
-    // Karena scraper asli belum ambil link .mp4, kita hanya notifikasi
-    alert("Scraper ini belum memiliki logika ekstraktor video. Link halaman episode: " + url);
-    // Jika sudah ada link mp4, ubah src iframe/video tag
-}
-
-function goHome() {
-    playerView.classList.add('hidden');
-    homeView.classList.remove('hidden');
-}
+// ... Sisa fungsi renderGrid, doSearch, dll biarkan sama ...
