@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KuramaStream 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">KURAMA<span>.V14</span></div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Cari anime...">
+            <button onclick="doSearch()"><i class="ri-search-line"></i></button>
+        </div>
+    </nav>
+
+    <main id="app">
+        
+        <div id="homeView">
+            <h2 class="section-title">Sedang Hangat 🔥</h2>
+            <div class="anime-grid" id="trendingGrid">
+                <div class="loading">Memuat data...</div>
+            </div>
+        </div>
+
+        <div id="playerView" class="hidden">
+            <button class="back-btn" onclick="goHome()"><i class="ri-arrow-left-line"></i> Kembali</button>
+            
+            <div class="video-container">
+                <div class="player-placeholder">
+                    <i class="ri-play-circle-line"></i>
+                    <p>Pilih Episode di bawah</p>
+                    <small>Catatan: Source code asli tidak menyertakan logika ekstraktor video.</small>
+                </div>
+            </div>
+
+            <div class="anime-info" id="animeInfo">
+                </div>
+
+            <h3 class="ep-title">Daftar Episode</h3>
+            <div class="episode-list" id="episodeList">
+                </div>
+        </div>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
